@@ -1,10 +1,12 @@
 package org.example.domain;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Warehouse {
+public class ProductService {
     private final ConcurrentHashMap<String, Product> products = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Set<String>> groups = new ConcurrentHashMap<>();
 
@@ -17,7 +19,7 @@ public class Warehouse {
     public ResponsePayload add(String name, int delta) {
         if (delta < 0) return ResponsePayload.fail("Negative delta");
         Product updated = products.compute(name, (k, current) -> {
-            if (current == null) return new Product(delta, 0.0);
+            if (current == null) return new Product(k, "", delta, 0.0);
             return current.withQuantity(current.getQuantity() + delta);
         });
         return ResponsePayload.ok(updated.getQuantity());
@@ -46,7 +48,7 @@ public class Warehouse {
     public ResponsePayload addProductToGroup(String groupName, String productName) {
         Set<String> members = groups.get(groupName);
         if (members == null) return ResponsePayload.fail("Unknown group: " + groupName);
-        products.computeIfAbsent(productName, n -> new Product(0, 0.0));
+        products.computeIfAbsent(productName, n -> new Product(n, "", 0, 0.0));
         members.add(productName);
         return ResponsePayload.ok();
     }
@@ -54,7 +56,7 @@ public class Warehouse {
     public ResponsePayload setPrice(String name, double price) {
         if (price < 0) return ResponsePayload.fail("Negative price");
         products.compute(name, (k, current) -> {
-            if (current == null) return new Product(0, price);
+            if (current == null) return new Product(k, "", 0, price);
             return current.withPrice(price);
         });
         return ResponsePayload.ok();
@@ -62,4 +64,36 @@ public class Warehouse {
 
     public Product peek(String name) { return products.get(name); }
     public Set<String> groupMembers(String groupName) { return groups.get(groupName); }
+
+    public ResponsePayload create(Product p) {
+        if (products.putIfAbsent(p.getName(), p) != null)
+            return ResponsePayload.fail("Product already exists: " + p.getName());
+        return ResponsePayload.ok();
+    }
+
+    public Product read(String name) {
+        return products.get(name);
+    }
+
+    public ResponsePayload update(Product p) {
+        if (!products.containsKey(p.getName()))
+            return ResponsePayload.fail("Unknown product: " + p.getName());
+        products.put(p.getName(), p);
+        return ResponsePayload.ok();
+    }
+
+    public ResponsePayload delete(String name) {
+        if (products.remove(name) == null)
+            return ResponsePayload.fail("Unknown product: " + name);
+        return ResponsePayload.ok();
+    }
+
+    public List<Product> search(ProductFilter filter, int page, int size) {
+        return products.values().stream()
+                .filter(filter::matches)
+                .sorted(Comparator.comparing(Product::getName))
+                .skip((long) page * size)
+                .limit(size)
+                .toList();
+    }
 }

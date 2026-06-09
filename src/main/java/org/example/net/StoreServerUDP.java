@@ -6,7 +6,7 @@ import org.example.crypto.MessageCipher;
 import org.example.domain.CommandHandler;
 import org.example.domain.CommandPayload;
 import org.example.domain.ResponsePayload;
-import org.example.domain.Warehouse;
+import org.example.domain.ProductService;
 import org.example.protocol.Message;
 import org.example.protocol.Packet;
 
@@ -30,7 +30,7 @@ public class StoreServerUDP {
     private static final int DEDUP_CACHE_SIZE = 1024;
 
     private final int port;
-    private final Warehouse warehouse;
+    private final ProductService warehouse;
     private final MessageCipher cipher;
 
     private volatile Predicate<String> dropReplyPredicate;
@@ -49,7 +49,7 @@ public class StoreServerUDP {
             }
     );
 
-    public StoreServerUDP(int port, Warehouse warehouse, MessageCipher cipher) {
+    public StoreServerUDP(int port, ProductService warehouse, MessageCipher cipher) {
         this.port = port;
         this.warehouse = warehouse;
         this.cipher = cipher;
@@ -140,7 +140,7 @@ public class StoreServerUDP {
         SecretKey key = MessageCipher.keyFrom(rawKey);
         MessageCipher cipher = new MessageCipher(key);
 
-        StoreServerUDP server = new StoreServerUDP(port, new Warehouse(), cipher);
+        StoreServerUDP server = new StoreServerUDP(port, new ProductService(), cipher);
         server.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

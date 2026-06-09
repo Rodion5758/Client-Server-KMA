@@ -5,7 +5,7 @@ import org.example.PacketEncoder;
 import org.example.crypto.MessageCipher;
 import org.example.domain.CommandPayload;
 import org.example.domain.ResponsePayload;
-import org.example.domain.Warehouse;
+import org.example.domain.ProductService;
 import org.example.protocol.Message;
 
 import java.util.concurrent.BlockingQueue;
@@ -25,9 +25,9 @@ public class Pipeline {
     private Receiver receiver;
     private Sender sender;
 
-    public Pipeline(Warehouse warehouse, MessageCipher cipher) {
+    public Pipeline(ProductService service, MessageCipher cipher) {
         this.decryptor = new Decryptor(rawQ, decodedQ, new PacketDecoder(cipher));
-        this.processor = new Processor(decodedQ, respQ, warehouse);
+        this.processor = new Processor(decodedQ, respQ, service);
         this.encryptor = new Encryptor(respQ, outQ, new PacketEncoder(cipher), (byte) 0);
     }
 

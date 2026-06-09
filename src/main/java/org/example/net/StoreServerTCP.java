@@ -6,7 +6,7 @@ import org.example.crypto.MessageCipher;
 import org.example.domain.CommandHandler;
 import org.example.domain.CommandPayload;
 import org.example.domain.ResponsePayload;
-import org.example.domain.Warehouse;
+import org.example.domain.ProductService;
 import org.example.protocol.Message;
 import org.example.protocol.Packet;
 
@@ -24,7 +24,7 @@ public class StoreServerTCP {
     private static final byte SERVER_SRC = 0x01;
 
     private final int port;
-    private final Warehouse warehouse;
+    private final ProductService warehouse;
     private final MessageCipher cipher;
 
     private ServerSocket serverSocket;
@@ -32,7 +32,7 @@ public class StoreServerTCP {
     private ExecutorService workers;
     private volatile boolean running;
 
-    public StoreServerTCP(int port, Warehouse warehouse, MessageCipher cipher) {
+    public StoreServerTCP(int port, ProductService warehouse, MessageCipher cipher) {
         this.port = port;
         this.warehouse = warehouse;
         this.cipher = cipher;
@@ -102,7 +102,7 @@ public class StoreServerTCP {
         SecretKey key = MessageCipher.keyFrom(rawKey);
         MessageCipher cipher = new MessageCipher(key);
 
-        StoreServerTCP server = new StoreServerTCP(port, new Warehouse(), cipher);
+        StoreServerTCP server = new StoreServerTCP(port, new ProductService(), cipher);
         server.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

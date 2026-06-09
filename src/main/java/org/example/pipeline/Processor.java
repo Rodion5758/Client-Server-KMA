@@ -2,8 +2,8 @@ package org.example.pipeline;
 
 import org.example.domain.CommandHandler;
 import org.example.domain.CommandPayload;
+import org.example.domain.ProductService;
 import org.example.domain.ResponsePayload;
-import org.example.domain.Warehouse;
 import org.example.protocol.Message;
 
 import java.util.concurrent.BlockingQueue;
@@ -17,10 +17,10 @@ public class Processor {
 
     public Processor(BlockingQueue<Message<CommandPayload>> inQ,
                      BlockingQueue<Message<ResponsePayload>> outQ,
-                     Warehouse warehouse) {
+                     ProductService service) {
         this.inQ = inQ;
         this.outQ = outQ;
-        this.handler = new CommandHandler(warehouse);
+        this.handler = new CommandHandler(service);
     }
 
     public void start() {

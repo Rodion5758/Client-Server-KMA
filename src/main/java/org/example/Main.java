@@ -1,7 +1,7 @@
 package org.example;
 
 import org.example.crypto.MessageCipher;
-import org.example.domain.Warehouse;
+import org.example.domain.ProductService;
 import org.example.pipeline.FakeReceiver;
 import org.example.pipeline.FakeSender;
 import org.example.pipeline.Pipeline;
@@ -15,7 +15,7 @@ public class Main {
         SecretKey key = MessageCipher.keyFrom(rawKey);
         MessageCipher cipher = new MessageCipher(key);
 
-        Warehouse warehouse = new Warehouse();
+        ProductService warehouse = new ProductService();
         Pipeline pipeline = new Pipeline(warehouse, cipher);
 
         PacketEncoder encoder = new PacketEncoder(cipher);

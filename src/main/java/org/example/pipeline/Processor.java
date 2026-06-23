@@ -1,9 +1,9 @@
 package org.example.pipeline;
 
+import org.example.domain.CommandHandler;
 import org.example.domain.CommandPayload;
-import org.example.domain.CommandType;
+import org.example.domain.ProductService;
 import org.example.domain.ResponsePayload;
-import org.example.domain.Warehouse;
 import org.example.protocol.Message;
 
 import java.util.concurrent.BlockingQueue;
@@ -11,16 +11,16 @@ import java.util.concurrent.BlockingQueue;
 public class Processor {
     private final BlockingQueue<Message<CommandPayload>> inQ;
     private final BlockingQueue<Message<ResponsePayload>> outQ;
-    private final Warehouse warehouse;
+    private final CommandHandler handler;
 
     private Thread thread;
 
     public Processor(BlockingQueue<Message<CommandPayload>> inQ,
                      BlockingQueue<Message<ResponsePayload>> outQ,
-                     Warehouse warehouse) {
+                     ProductService service) {
         this.inQ = inQ;
         this.outQ = outQ;
-        this.warehouse = warehouse;
+        this.handler = new CommandHandler(service);
     }
 
     public void start() {
@@ -36,8 +36,7 @@ public class Processor {
     }
 
     public void process(Message<CommandPayload> message) throws InterruptedException {
-        ResponsePayload result = handle(message.getCType(), message.getPayload());
-        outQ.put(new Message<>(message.getCType(), message.getBUserId(), result));
+        outQ.put(handler.handle(message));
     }
 
     private void run() {
@@ -51,17 +50,5 @@ public class Processor {
                 System.err.println("Processor error: " + e.getMessage());
             }
         }
-    }
-
-    private ResponsePayload handle(int cType, CommandPayload c) {
-        return switch (cType) {
-            case CommandType.GET_QUANTITY -> warehouse.getQuantity(c.getProductName());
-            case CommandType.SUBTRACT -> warehouse.subtract(c.getProductName(), c.getQuantity());
-            case CommandType.ADD -> warehouse.add(c.getProductName(), c.getQuantity());
-            case CommandType.ADD_GROUP -> warehouse.addGroup(c.getGroupName());
-            case CommandType.ADD_PRODUCT_TO_GROUP -> warehouse.addProductToGroup(c.getGroupName(), c.getProductName());
-            case CommandType.SET_PRICE -> warehouse.setPrice(c.getProductName(), c.getPrice());
-            default -> ResponsePayload.fail("Unknown command type: " + cType);
-        };
     }
 }

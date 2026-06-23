@@ -4,7 +4,7 @@ import org.example.PacketEncoder;
 import org.example.crypto.MessageCipher;
 import org.example.domain.CommandPayload;
 import org.example.domain.CommandType;
-import org.example.domain.Warehouse;
+import org.example.domain.ProductService;
 import org.example.protocol.Message;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PipelineConcurrencyTest {
     private static final byte[] RAW_KEY = "0123456789abcdef".getBytes(StandardCharsets.UTF_8);
 
-    private Warehouse warehouse;
+    private ProductService warehouse;
     private Pipeline pipeline;
     private PacketEncoder clientEncoder;
     private FakeSender sender;
@@ -31,7 +31,7 @@ class PipelineConcurrencyTest {
     void setUp() {
         SecretKey key = MessageCipher.keyFrom(RAW_KEY);
         MessageCipher cipher = new MessageCipher(key);
-        warehouse = new Warehouse();
+        warehouse = new ProductService();
         pipeline = new Pipeline(warehouse, cipher);
         sender = new FakeSender(pipeline.outQueue());
         pipeline.setSender(sender);
